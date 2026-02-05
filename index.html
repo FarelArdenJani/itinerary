@@ -302,6 +302,8 @@
             font-weight: 700;
             z-index: 100;
             white-space: nowrap;
+            max-width: 90%;
+            text-align: center;
             border: 3px solid rgba(255, 255, 255, 0.3);
             box-shadow:
                 0 20px 60px rgba(233, 30, 99, 0.5),
@@ -697,6 +699,7 @@
             gap: 8px;
             font-family: 'Poppins', sans-serif;
             font-weight: 500;
+            position: relative;
         }
 
         .btn:hover {
@@ -1030,9 +1033,71 @@
             }
 
             .btn-group {
-                flex-direction: column;
-                top: 15px;
-                right: 15px;
+                flex-direction: row;
+                top: 10px;
+                right: 10px;
+                gap: 6px;
+            }
+
+            .btn {
+                padding: 10px 12px;
+                font-size: 0.75rem;
+                gap: 4px;
+            }
+
+            .btn i {
+                margin-right: 0;
+                font-size: 1rem;
+            }
+
+            .btn-settings span,
+            .btn-reset span {
+                display: none;
+            }
+
+            .btn-settings::after,
+            .btn-reset::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 50%;
+                transform: translateX(-50%) scale(0);
+                width: 4px;
+                height: 4px;
+                background: white;
+                border-radius: 50%;
+                transition: transform 0.2s ease;
+            }
+
+            .btn-settings:hover::after,
+            .btn-reset:hover::after {
+                transform: translateX(-50%) scale(1);
+            }
+
+            .day-header {
+                gap: 15px;
+                padding: 20px 15px;
+            }
+
+            .day-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+
+            .day-info h2 {
+                font-size: 1.3rem;
+            }
+
+            .day-date {
+                font-size: 0.85rem;
+            }
+
+            .day-section.locked::after {
+                font-size: 1rem;
+                padding: 20px 30px;
+                white-space: normal;
+                max-width: 85%;
             }
 
             .checklist-item {
@@ -1109,10 +1174,10 @@
     <!-- Buttons -->
     <div class="btn-group">
         <button class="btn btn-settings" onclick="openSettings()">
-            <i class="fas fa-cog"></i> Settings
+            <i class="fas fa-cog"></i> <span>Settings</span>
         </button>
         <button class="btn btn-reset" onclick="resetAll()">
-            <i class="fas fa-redo"></i> Reset
+            <i class="fas fa-redo"></i> <span>Reset</span>
         </button>
     </div>
 
@@ -2277,11 +2342,17 @@
 
         // Toast notification
         let toastTimeout;
+        let toastEl = null;
         function showToast(message) {
             const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
+            const toastMessage = document.getElementById('toast-message');
+            toastMessage.textContent = message;
 
+            // Kill any existing animations on the toast
+            if (toastEl) gsap.killTweensOf(toast);
+            toastEl = toast;
+
+            // Animate in
             gsap.fromTo(toast,
                 { y: 100, opacity: 0 },
                 { y: 0, opacity: 1, duration: 0.5, ease: 'back.out(1.7)' }
@@ -2289,7 +2360,18 @@
 
             clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => {
-                toast.classList.remove('show');
+                // Animate out properly
+                gsap.to(toast, {
+                    y: 100,
+                    opacity: 0,
+                    duration: 0.3,
+                    ease: 'power2.in',
+                    onComplete: () => {
+                        // Reset for next time
+                        toast.style.y = 100;
+                        toast.style.opacity = 0;
+                    }
+                });
             }, 3000);
         }
 
